@@ -86,9 +86,6 @@ class Beck:
                 # Convert the AI response to speech
                 audio_file = text_to_speech(ai_response)
                 play_audio(audio_file)
-                
-                # Remove the temporary audio file
-                os.remove(audio_file)
 
             except sr.UnknownValueError:
                 print("Sorry, I could not understand audio.")
