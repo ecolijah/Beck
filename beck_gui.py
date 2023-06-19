@@ -1,6 +1,21 @@
 import tkinter as tk
 import speech_recognition as sr
 
+import os
+import openai
+
+
+def chat(text):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": text}
+        ]
+    )
+    return response.choices[0].message.content.strip()
+
+
 class Beck:
     def __init__(self):
         self.is_listening = False
@@ -12,7 +27,10 @@ class Beck:
         self.button = tk.Button(self.root, text="", width=100, bg = "green", height=100, command=self.toggle_listening, highlightthickness=0)
         self.button.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
+
         self.root.mainloop()
+
+
 
     def toggle_listening(self):
         if self.is_listening:
@@ -22,7 +40,7 @@ class Beck:
 
     def start_listening(self):
         self.is_listening = True
-        self.button.config(bg="red")#config(bg="red")
+        self.button.config(bg="red")
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
         self.listen_for_audio()
@@ -35,13 +53,15 @@ class Beck:
 
     def listen_for_audio(self):
         with self.microphone as source:
-            #self.button.config(bg="red")
             print("Listening...")
             audio = self.recognizer.listen(source)
             print("Recognizing...")
             try:
                 text = self.recognizer.recognize_google(audio)
-                print("You said:", text)
+                print("User:", text)
+                #send call to openai api key
+                ai_response = chat(text)
+                print("Beck:", ai_response)
             except sr.UnknownValueError:
                 print("Sorry, I could not understand audio.")
             except sr.RequestError as e:
@@ -50,4 +70,7 @@ class Beck:
         self.stop_listening()
 
 if __name__ == "__main__":
+    openai.api_key = "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"
+    key = os.getenv("OPENAI_API_KEY")
+    print(key)
     app = Beck()
