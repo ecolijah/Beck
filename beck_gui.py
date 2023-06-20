@@ -10,16 +10,15 @@ import pygame
 from dotenv import load_dotenv
 load_dotenv() 
 
+#constants
+green_color = "#00EE00"
+red_color = "#EE6363"
 # function that sends messaage to api, returns text response.
 def chat(text):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages = [    # calibration for the ai.
-            {"role": "system", "content": "You are an assistant named Beck."},
-            {"role": "user", "content": "Can you recommend a good movie?"},
-            {"role": "assistant", "content": "What genre are you interested in?"},
-            {"role": "user", "content": "I like 2000's comedy movies."},
-            {"role": "assistant", "content": "In that case, I recommend watching 'Superbad', starring Jonah Hill or 'Tropic-Thunder', starring Ben Stiller."},
+            {"role": "system", "content": "You are an assistant named Beck, who is helpful but not enthusiastic. You are concise with your answers and do not say more than you need to."},
             {"role": "user", "content": text}
         ]
 
@@ -46,7 +45,7 @@ def play_audio(audio_file_tmp):
     while pygame.mixer.music.get_busy():
         continue
     
-    
+
 # Beck class representing the tkinter application.
 class Beck:
     def __init__(self):
@@ -56,7 +55,7 @@ class Beck:
         self.root.resizable(False, False)  # Prevents window from being resizable.
         self.root.title("Beck")
 
-        self.button = tk.Button(self.root, text="", width=100, bg="green", height=100, command=self.toggle_listening)
+        self.button = tk.Button(self.root, text="", bg=green_color,fg=red_color,width=100,height=100, command=self.toggle_listening, relief='flat')
         self.button.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         self.root.mainloop()
@@ -69,14 +68,16 @@ class Beck:
 
     def start_listening(self):
         self.is_listening = True
-        self.button.config(bg="red")
+        self.button.config(bg=red_color)
+        self.root.update_idletasks()  # Force the update of the button appearance.
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
         self.listen_for_audio()
 
     def stop_listening(self):
         self.is_listening = False
-        self.button.config(bg="green")
+        self.button.config(bg=green_color)
+        self.root.update_idletasks()  # Force the update of the button appearance.
         self.microphone = None
         self.recognizer = None
 
@@ -97,11 +98,18 @@ class Beck:
                 audio_file = text_to_speech(ai_response)
                 # play the generated audio file.
                 play_audio(audio_file)
+                #terminates application
+                if text == "bye-bye" or text== "bye" or text == "goodbye":
+                    self.root.destroy()
 
             except sr.UnknownValueError:
                 print("Sorry, I could not understand audio.")
+                audio_file = text_to_speech("Sorry, I could not understand audio.")
+                play_audio(audio_file)
             except sr.RequestError as e:
                 print("Could not request results from Google Speech Recognition service; {0}".format(e))
+                audio_file = text_to_speech("Could not request results from Google Speech Recognition service")
+                play_audio(audio_file)
 
         self.stop_listening()
 
