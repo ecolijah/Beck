@@ -1,50 +1,42 @@
 import tkinter as tk
 import speech_recognition as sr
-from gtts import gTTS
 import os
 import openai
 import tempfile
-import pygame
+import pyttsx3
 
 # loading environment variables from .env file.
 from dotenv import load_dotenv
-load_dotenv() 
+load_dotenv()
 
-#constants
+# constants
 green_color = "#00EE00"
 red_color = "#EE6363"
-# function that sends messaage to api, returns text response.
+i = 0 # finding voice
+
+
+# function that sends message to API and returns text response.
+####### need to add memory of past conversations somehow
 def chat(text):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        messages = [    # calibration for the ai.
+        messages=[
             {"role": "system", "content": "You are an assistant named Beck, who is helpful but not enthusiastic. You are concise with your answers and do not say more than you need to."},
             {"role": "user", "content": text}
         ]
-
     )
     return response.choices[0].message.content.strip()
 
-# function that turns text to speech, returns name of the temporary audio file.
+
+# function that turns text to speech and speaks it.
 def text_to_speech(ai_text):
-    # Create a temporary file to save the audio.
-    temp_file = tempfile.NamedTemporaryFile(delete=False)
-    temp_filename = temp_file.name
+    engine = pyttsx3.init()
+    engine.setProperty("voice", "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0")
 
-    # Convert the text to speech.
-    tts = gTTS(text=ai_text, lang="en")
-    tts.save(temp_filename)
+    engine.setProperty("rate", 200)  # You can adjust the speech rate here
+    engine.say(ai_text)
+    engine.runAndWait()
 
-    return temp_filename
-
-# function that plays audio file using pygame library.
-def play_audio(audio_file_tmp):
-    pygame.mixer.init()
-    pygame.mixer.music.load(audio_file_tmp)
-    pygame.mixer.music.play()
-    while pygame.mixer.music.get_busy():
-        continue
-    
 
 # Beck class representing the tkinter application.
 class Beck:
@@ -55,7 +47,8 @@ class Beck:
         self.root.resizable(False, False)  # Prevents window from being resizable.
         self.root.title("Beck")
 
-        self.button = tk.Button(self.root, text="", bg=green_color,fg=red_color,width=100,height=100, command=self.toggle_listening, relief='flat')
+        self.button = tk.Button(self.root, text="", bg=green_color, fg=red_color, width=100, height=100,
+                                command=self.toggle_listening, relief='flat')
         self.button.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         self.root.mainloop()
@@ -87,7 +80,6 @@ class Beck:
             audio = self.recognizer.listen(source)
             print("Recognizing...")
             try:
-
                 text = self.recognizer.recognize_google(audio)
                 print("User:", text)
                 # Send call to OpenAI API key.
@@ -95,21 +87,18 @@ class Beck:
                 print("Beck:", ai_response)
 
                 # Convert the AI response to speech.
-                audio_file = text_to_speech(ai_response)
-                # play the generated audio file.
-                play_audio(audio_file)
-                #terminates application
-                if text == "bye-bye" or text== "bye" or text == "goodbye":
+                text_to_speech(ai_response)
+
+                # Terminate the application
+                if text in ["bye-bye", "bye", "goodbye"]:
                     self.root.destroy()
 
             except sr.UnknownValueError:
                 print("Sorry, I could not understand audio.")
-                audio_file = text_to_speech("Sorry, I could not understand audio.")
-                play_audio(audio_file)
+                text_to_speech("Sorry, I could not understand audio.")
             except sr.RequestError as e:
                 print("Could not request results from Google Speech Recognition service; {0}".format(e))
-                audio_file = text_to_speech("Could not request results from Google Speech Recognition service")
-                play_audio(audio_file)
+                text_to_speech("Could not request results from Google Speech Recognition service")
 
         self.stop_listening()
 
