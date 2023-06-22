@@ -2,7 +2,6 @@ import tkinter as tk
 import speech_recognition as sr
 import os
 import openai
-import tempfile
 import pyttsx3
 
 # loading environment variables from .env file.
@@ -15,7 +14,7 @@ red_color = "#EE6363"
 voiceid ="HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0"
 # make changes so that while app is running we use variable memory, and before it closes it writes latest copy to messages log.
 rolling_messages = []
-rolling_messages_count = 10
+rolling_messages_count = 7 # for some reason 3 extra lines are added? so i set to 7 instead of 10
 messages_filepath = 'rolling_messages.txt'
 proompt_filepath = 'prompt.txt'
 
@@ -83,7 +82,7 @@ def generate_prompt(user_recent_text):
     # TODO: add previous conversation, and most recent user query to prompt
     conversation = load_conversation(messages_filepath)
     prompt = open_file_edit_contents(proompt_filepath, "<<CONVERSATION>>", conversation, "<<USER_RECENT_QUERY>>", user_recent_text)
-    print(prompt + '\n')
+    #print(prompt + '\n')
     return prompt
 def open_file_edit_contents(file_path, old_str_1, new_str_1, old_str_2, new_str_2):
     # Read the file
