@@ -3,6 +3,7 @@ import speech_recognition as sr
 import os
 import openai
 import pyttsx3
+import threading
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -130,6 +131,7 @@ class BeckApp:
 
     def start_listening(self):
         self.is_listening = True
+        self.button.config(state="disabled")  # Disable the button
         self.button.config(bg=RED_COLOR)
         self.root.update_idletasks()
         self.recognizer = sr.Recognizer()
@@ -143,45 +145,52 @@ class BeckApp:
         self.root.update_idletasks()
         self.microphone = None
         self.recognizer = None
-
+        self.button.config(state="normal")  # Enable the button
+        
     def listen_for_audio(self):
-        with self.microphone as source:
-            print("Listening...")
-            audio = self.recognizer.listen(source)
-            print("Recognizing...")
-            try:
-                text = self.recognizer.recognize_google(audio)
-                print("USER:", text)
-                # Update the message box with user and bot messages
-                self.message_box.config(state="normal")
-                self.message_box.insert(tk.END, "USER: " + text + "\n", "user")
-                self.root.update_idletasks() #force update idle task
+        def process_audio():
+            with self.microphone as source:
+                print("Listening...")
+                audio = self.recognizer.listen(source)
+                print("Recognizing...")
+                try:
+                    text = self.recognizer.recognize_google(audio)
+                    print("USER:", text)
+                    # Update the message box with user and bot messages
+                    self.message_box.config(state="normal")
+                    self.message_box.insert(tk.END, "USER: " + text + "\n", "user")
+                    self.root.update_idletasks()
+        
+                    prompt = self.chatbot.generate_prompt(text)
+                    ai_response = self.chatbot.chat(prompt)
+                    print("BECK:", ai_response)
+                    self.message_box.insert(tk.END, "BECK: " + ai_response + "\n", "bot")
+                    self.message_box.config(state="disabled")
+                    self.root.update_idletasks()
+                    # Configure the message tags for color highlighting
+                    self.message_box.tag_config("user", foreground="blue")
+                    self.message_box.tag_config("bot", foreground="green")
+                    self.root.update_idletasks()
+        
+                    self.text_to_speech.speak(ai_response)
+                    self.chatbot.messages.append(text, ai_response)
+        
+                    if text in ["bye-bye", "bye", "goodbye"]:
+                        self.root.destroy()
+        
+                except sr.UnknownValueError:
+                    print("Sorry, I could not understand audio.")
+                    self.text_to_speech.speak("Sorry, I could not understand audio.")
+                except sr.RequestError as e:
+                    print("Could not request results from Google Speech Recognition service; {0}".format(e))
+                    self.text_to_speech.speak("Could not request results from Google Speech Recognition service")
+        
+            self.stop_listening()
 
-                prompt = self.chatbot.generate_prompt(text)
-                ai_response = self.chatbot.chat(prompt)
-                print("BECK:", ai_response)
-                self.message_box.insert(tk.END, "BECK: " + ai_response + "\n", "bot")
-                self.message_box.config(state="disabled")
-                self.root.update_idletasks() #force update idle task
-                # Configure the message tags for color highlighting
-                self.message_box.tag_config("user", foreground="blue")
-                self.message_box.tag_config("bot", foreground="green")
-                self.root.update_idletasks() #force update idle task
+        # Create a new thread and start the text-to-speech process
+        audio_thread = threading.Thread(target=process_audio)
+        audio_thread.start()
 
-                self.text_to_speech.speak(ai_response)
-                self.chatbot.messages.append(text, ai_response)
-
-                if text in ["bye-bye", "bye", "goodbye"]:
-                    self.root.destroy()
-
-            except sr.UnknownValueError:
-                print("Sorry, I could not understand audio.")
-                self.text_to_speech.speak("Sorry, I could not understand audio.")
-            except sr.RequestError as e:
-                print("Could not request results from Google Speech Recognition service; {0}".format(e))
-                self.text_to_speech.speak("Could not request results from Google Speech Recognition service")
-
-        self.stop_listening()
 
 
 # Driver code
