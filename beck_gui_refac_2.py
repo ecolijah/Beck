@@ -120,8 +120,15 @@ class BeckApp:
 
         self.message_box.config(yscrollcommand=self.scrollbar.set)
         self.message_box.config(state="disabled")
+        self.root.wm_protocol("WM_DELETE_WINDOW", self.on_close)
+        self.window_open = True
 
         self.root.mainloop()
+
+    def on_close(self):
+        #close thread
+        self.root.destroy()
+        self.window_open = False
 
     def toggle_listening(self):
         if self.is_listening:
@@ -152,6 +159,8 @@ class BeckApp:
             with self.microphone as source:
                 print("Listening...")
                 audio = self.recognizer.listen(source)
+                if not self.window_open:
+                    return
                 print("Recognizing...")
                 try:
                     text = self.recognizer.recognize_google(audio)
@@ -163,6 +172,8 @@ class BeckApp:
         
                     prompt = self.chatbot.generate_prompt(text)
                     ai_response = self.chatbot.chat(prompt)
+                    if not self.window_open:
+                        return
                     print("BECK:", ai_response)
                     self.message_box.insert(tk.END, "BECK: " + ai_response + "\n", "bot")
                     self.message_box.config(state="disabled")
@@ -188,9 +199,8 @@ class BeckApp:
             self.stop_listening()
 
         # Create a new thread and start the text-to-speech process
-        audio_thread = threading.Thread(target=process_audio)
-        audio_thread.start()
-
+        self.audio_thread = threading.Thread(target=process_audio)
+        self.audio_thread.start()
 
 
 # Driver code

@@ -6,7 +6,7 @@ import pyttsx3
 from dotenv import load_dotenv
 
 load_dotenv()
-
+# constants
 GREEN_COLOR = "#00EE00"
 RED_COLOR = "#EE6363"
 VOICE_ID = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0"
