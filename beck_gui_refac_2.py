@@ -94,19 +94,31 @@ class TextToSpeech:
 
 
 class BeckApp:
-    # Represents the tkinter application for Beck chatbot to be implemented with.
+    """
+    Represents the tkinter application for the Beck chatbot.
+    """
+
     def __init__(self, chatbot, text_to_speech):
         self.chatbot = chatbot
         self.text_to_speech = text_to_speech
         self.is_listening = False
         self.root = tk.Tk()
-        self.root.geometry("400x400")
+        self.root.geometry("800x400")
         self.root.resizable(False, False)
         self.root.title("Beck")
 
         self.button = tk.Button(self.root, text="", bg=GREEN_COLOR, fg=RED_COLOR, width=100, height=100,
                                 command=self.toggle_listening, relief='flat')
-        self.button.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        self.button.place(relx=0.0, rely=0.5, anchor=tk.CENTER)
+
+        self.message_box = tk.Text(self.root, bg="white", fg="black", height=25, width=55, relief='flat')
+        self.message_box.place(relx=0.72, rely=0.5, anchor=tk.CENTER)
+
+        self.scrollbar = tk.Scrollbar(self.root, command=self.message_box.yview)
+        #self.scrollbar.place(relx=0.98, rely=0.5, anchor=tk.CENTER, relheight=0.8)
+
+        self.message_box.config(yscrollcommand=self.scrollbar.set)
+        self.message_box.config(state="disabled")
 
         self.root.mainloop()
 
@@ -122,7 +134,7 @@ class BeckApp:
         self.root.update_idletasks()
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
-        self.recognizer.pause_threshold = 2 # can be adjusted to USER's preference.
+        self.recognizer.pause_threshold = 2  # can be adjusted to the user's preference.
         self.listen_for_audio()
 
     def stop_listening(self):
@@ -140,9 +152,21 @@ class BeckApp:
             try:
                 text = self.recognizer.recognize_google(audio)
                 print("USER:", text)
+                # Update the message box with user and bot messages
+                self.message_box.config(state="normal")
+                self.message_box.insert(tk.END, "USER: " + text + "\n", "user")
+                self.root.update_idletasks() #force update idle task
+
                 prompt = self.chatbot.generate_prompt(text)
                 ai_response = self.chatbot.chat(prompt)
                 print("BECK:", ai_response)
+                self.message_box.insert(tk.END, "BECK: " + ai_response + "\n", "bot")
+                self.message_box.config(state="disabled")
+                self.root.update_idletasks() #force update idle task
+                # Configure the message tags for color highlighting
+                self.message_box.tag_config("user", foreground="blue")
+                self.message_box.tag_config("bot", foreground="green")
+                self.root.update_idletasks() #force update idle task
 
                 self.text_to_speech.speak(ai_response)
                 self.chatbot.messages.append(text, ai_response)
@@ -158,6 +182,7 @@ class BeckApp:
                 self.text_to_speech.speak("Could not request results from Google Speech Recognition service")
 
         self.stop_listening()
+
 
 # Driver code
 if __name__ == "__main__":
