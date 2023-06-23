@@ -172,7 +172,7 @@ class BeckApp:
         
                     prompt = self.chatbot.generate_prompt(text)
                     ai_response = self.chatbot.chat(prompt)
-                    if not self.window_open:
+                    if not self.window_open: #terminates window before thread stops 
                         return
                     print("BECK:", ai_response)
                     self.message_box.insert(tk.END, "BECK: " + ai_response + "\n", "bot")
