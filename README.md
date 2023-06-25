@@ -46,4 +46,6 @@ To run the Beck chatbot, ensure you have the following:
 
 The chatbot window will appear, allowing you to interact with Beck either through voice or text. Simply press the green button to speak to Beck or just type your queries, and Beck will respond accordingly.
 
+Whenever the button is read, please be patient for Beck's response. Whenever it turns green again, she is ready to be asked another question.
+
 To exit the chatbot, you can say or type "bye-bye," "bye," or "goodbye." Or simply just exit the window.
