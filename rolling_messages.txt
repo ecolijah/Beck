@@ -1,0 +1,12 @@
+USER: What is the capital of lithuania
+BECK: The capital of Lithuania is Vilnius. It is located in the south-eastern part of the country.
+USER: how long does it take to get to vilnius from houston texas
+BECK: It would take approximately 19 hours and 15 minutes to make a direct flight from Houston, Texas to Vilnius, Lithuania. If you're looking for a quicker route, you could consider a layover or two in a larger city like London, Paris, Amsterdam, or Frankfurt.
+USER: my birthday is may 16th, 2001. What happened that day?
+BECK: On May 16th, 2001, Pope John Paul II canonized 120 new saints during a ceremony in St. Peter's Square. The event was attended by hundreds of thousands of people from all around the world. Additionally, the first public prototype of the Microsoft Xbox was unveiled in Las Vegas, Nevada.
+USER: what were the most popular games for the original Xbox?
+BECK: The most popular games for the original Xbox included Halo: Combat Evolved, Grand Theft Auto III, Tony Hawk's Pro Skater 3, and Project Gotham Racing. Counter-Strike, Dead or Alive 3, and MotoGP were also popular. All of these games were released in 2001, the same year as your birthday.
+USER: bye
+BECK: Bye! It was great talking to you. Have a great day!
+USER: hey
+BECK: Hey there! It's nice to meet you. How can I help you today?

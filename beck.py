@@ -6,16 +6,15 @@ import pyttsx3
 import threading
 from dotenv import load_dotenv
 
-load_dotenv()
-
-GREEN_COLOR = "#00EE00"
-RED_COLOR = "#EE6363"
-GREY_COLOR = "#EEF6E6"
-DARKER_GREY_COLOR = "#BEC4B8"
-VOICE_ID = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0"
+load_dotenv() #load environment variables
+GREEN_COLOR = "#00EE00" # go
+RED_COLOR = "#EE6363" # wait
+GREY_COLOR = "#EEF6E6" # used for inout field
+DARKER_GREY_COLOR = "#BEC4B8" #used for send button
+VOICE_ID = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN-US_ZIRA_11.0" #female
 ROLLING_MESSAGES_COUNT = 7 #can be increased for larger memory, at the cost of more tokens.
-MESSAGES_FILEPATH = 'rolling_messages.txt'
-PROMPT_FILEPATH = 'prompt.txt'
+MESSAGES_FILEPATH = 'rolling_messages.txt' #create new file in root directory.
+PROMPT_FILEPATH = 'prompt.txt' #create new file in root directory.
 
 
 class RollingMessages:
@@ -88,7 +87,7 @@ class TextToSpeech:
     def __init__(self, voice_id):
         self.engine = pyttsx3.init()
         self.engine.setProperty("voice", voice_id)
-        self.engine.setProperty("rate", 190)
+        self.engine.setProperty("rate", 210)
 
     def speak(self, text):
         # Convert text to speech and speak it.
@@ -97,9 +96,7 @@ class TextToSpeech:
 
 
 class BeckApp:
-    """
-    Represents the tkinter application for the Beck chatbot.
-    """
+    # Represents the tkinter application for the Beck chatbot.
 
     def __init__(self, chatbot, text_to_speech):
         self.chatbot = chatbot
@@ -110,34 +107,32 @@ class BeckApp:
         self.root.config(bg="white")
         self.root.resizable(False, False)
         self.root.title("Beck")
-
-        self.button = tk.Button(self.root, text="", bg=GREEN_COLOR, fg=RED_COLOR, width=100, height=100,
-                                command=self.toggle_listening, relief='flat')
+        
+        #voice activation button
+        self.button = tk.Button(self.root, text="", bg=GREEN_COLOR, fg=RED_COLOR, width=100, height=100,command=self.toggle_listening, relief='flat')
         self.button.place(relx=0.0, rely=0.5, anchor=tk.CENTER)
-
+        # chat box
         self.message_box = tk.Text(self.root, bg="white", fg="black", height=23, width=54, relief='flat')
         self.message_box.place(relx=0.7225, rely=0.47, anchor=tk.CENTER)
-
+        #scrollable message box
         self.scrollbar = tk.Scrollbar(self.root, command=self.message_box.yview)
-        
-        self.message_box.config(yscrollcommand=self.scrollbar.set)
+        self.message_box.config(yscrollcommand=self.scrollbar.set) #link scrollbar
         self.message_box.config(state="disabled")
-
+        # input field
         self.input_field = tk.Entry(self.root, width=58, bg=GREY_COLOR)
         self.input_field.place(relx=0.675, rely=0.96, anchor=tk.CENTER)
-        self.input_field.bind("<Return>", self.send_message)
-
+        self.input_field.bind("<Return>", self.send_message) # enter key bind to send message from input field
+        #send button
         self.send_button = tk.Button(self.root, text="Send", width=8, height=1, command=self.send_message,bg=DARKER_GREY_COLOR, )
         self.send_button.place(relx=0.95, rely=0.96, anchor=tk.CENTER)
+        # on close protocol
         self.root.wm_protocol("WM_DELETE_WINDOW", self.on_close)
-        self.window_open = True
-
+        self.window_open = True #boolean for threading bug
         self.root.mainloop()
 
     def on_close(self):
-        #close thread
         self.root.destroy()
-        self.window_open = False
+        self.window_open = False #close window before thread finished, bug
 
     def toggle_listening(self):
         if self.is_listening:
@@ -152,11 +147,10 @@ class BeckApp:
         self.root.update_idletasks()
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
-        self.recognizer.pause_threshold = 2  # can be adjusted to the user's preference.
+        self.recognizer.pause_threshold = 1.5  # can be adjusted to the user's preference.
         self.listen_for_audio()
 
     def stop_listening(self):
-
         self.is_listening = False
         self.button.config(bg=GREEN_COLOR)
         self.root.update_idletasks()
@@ -164,11 +158,9 @@ class BeckApp:
         self.recognizer = None
         self.button.config(state="normal")  # Enable the button
 
-    
     def send_message(self, event=None):
         def process_message():
-
-            user_input = self.input_field.get()
+            user_input = self.input_field.get() # fetch input
             if user_input:
                 self.input_field.delete(0, tk.END)
                 self.message_box.tag_config("user", foreground="blue")
@@ -179,26 +171,24 @@ class BeckApp:
                 self.message_box.insert(tk.END, "USER: " + user_input + "\n", "user")
                 self.message_box.config(state="disabled")
                 self.button.config(bg=RED_COLOR)
-
                 self.root.update_idletasks()
-
+                #generate prompt, call api
                 prompt = self.chatbot.generate_prompt(user_input)
                 ai_response = self.chatbot.chat(prompt)
-                if not self.window_open: #terminates window before thread stops 
+                if not self.window_open: #bug
                     return
-                print("BECK:", ai_response)
+                #print("BECK:", ai_response) #testing purposes
 
                 # Update the message box with bot response
                 self.message_box.config(state="normal")
                 self.message_box.insert(tk.END, "BECK: " + ai_response + "\n", "bot")
                 self.message_box.config(state="disabled")
-
                 self.root.update_idletasks()
 
                 self.text_to_speech.speak(ai_response)
-                
+                if self.window_open==False:
+                    return
                 self.chatbot.messages.append(user_input, ai_response)
-                
                 if user_input.lower() in ["bye-bye", "bye", "goodbye"]:
                     self.root.destroy()
                 self.stop_listening()
@@ -206,7 +196,6 @@ class BeckApp:
         self.thread = threading.Thread(target=process_message)
         self.thread.start()
 
-        
     def listen_for_audio(self):
         def process_audio():
             with self.microphone as source:
@@ -236,13 +225,13 @@ class BeckApp:
                     self.message_box.config(state="disabled")
                     self.root.update_idletasks()
 
-        
                     self.text_to_speech.speak(ai_response)
+                    if not self.window_open:
+                        return
                     self.chatbot.messages.append(text, ai_response)
-        
                     if text in ["bye-bye", "bye", "goodbye"]:
                         self.root.destroy()
-        
+
                 except sr.UnknownValueError:
                     print("Sorry, I could not understand audio.")
                     self.text_to_speech.speak("Sorry, I could not understand audio.")
@@ -255,8 +244,6 @@ class BeckApp:
         # Create a new thread and start the text-to-speech process
         self.thread = threading.Thread(target=process_audio)
         self.thread.start()
-
-
 
 # Driver code
 if __name__ == "__main__":
