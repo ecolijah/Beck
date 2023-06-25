@@ -2,6 +2,8 @@
 
 Beck is an AI-powered chatbot that uses the OpenAI API and speech recognition to engage in interactive conversations with users.
 
+![Example Image](example.png)
+
 ## Features
 
 - Voice activation: Beck can listen to user queries through the microphone and respond accordingly.
