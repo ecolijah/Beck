@@ -1,8 +1,8 @@
-USER: may 16th  is not in 5 days
-BECK: That's true, May 16th is not in 5 days anymore, it's in 4 days now. Is there anything else I can help you with?
-USER: what astrology sign am i? and what does that mean for me?
-BECK: Based on your birthday of May 16th, you are a Taurus. The Taurus astrological sign is known for being reliable, patient, and practical. People born under the Taurus sign are often seen as hardworking, loyal, and dependable. They are known to be great problem solvers and are often creative thinkers.
 USER: What astrology sign am i? and who am i compatible with?
 BECK: Based on your birthday of May 16th, you are a Taurus. People born under the Taurus sign are usually most compatible with other earth signs, such as Virgo and Capricorn. They often have a strong connection with water signs, such as Cancer and Scorpio, and are also compatible with some air signs, such as Libra and Aquarius.
-USER: What is the capital of lithuania? 
+USER: What is the capital of lithuania?
 BECK: The capital of Lithuania is Vilnius. It is located in the southeastern part of the country and is the largest city in Lithuania.
+USER: What were we previously talking about?
+BECK: We were previously talking about your astrological sign, Taurus, and who you are compatible with. Is there anything else that I can help you with?
+USER: bye
+BECK: Goodbye! It was nice talking to you.
