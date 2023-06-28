@@ -126,7 +126,7 @@ class ChatBot:
     def generate_prompt(self, user_recent_text, relevant_convos):
         # Generate the conversation prompt with the latest user query.
         conversation = '\n'.join(self.messages.messages)
-        prompt = self.openai_prompt.replace("<<CONVERSATION>>", conversation).replace("<<USER_RECENT_QUERY>>", user_recent_text).replace("RELEVANT_CONVERSATION", relevant_convos)
+        prompt = self.openai_prompt.replace("<<PREVIOUS_CONVERSATION>>", conversation).replace("<<USER_RECENT_QUERY>>", user_recent_text).replace("<<RELEVANT_CONVERSATION>>", relevant_convos)
         return prompt
 
 
@@ -224,7 +224,7 @@ class BeckApp:
                 timestamp = time()
                 timestring = timestamp_to_string(timestamp) # in 
                 unique_id = str(uuid4())
-                metadata = {'speaker': 'USER', 'time': timestamp, 'message': user_input, 'timestring': timestring, 'uuid': unique_id} # metadtata to be saved to local database
+                metadata = {'speaker': 'USER', 'time': timestamp, 'message': 'USER: ' + user_input, 'timestring': timestring, 'uuid': unique_id} # metadtata to be saved to local database
 
                 # Save metadata to local database
                 save_metadata_to_json(metadata,unique_id)
@@ -234,7 +234,7 @@ class BeckApp:
                 payload.append((unique_id, user_input_embedding))
 
                 #now we must query for similar results from vector db
-                results = self.vdb_index.query(vector=user_input_embedding, top_k=num_query_results)
+                results = self.vdb_index.query(vector=user_input_embedding, top_k=num_query_results, include_values=False, include_metadata=False)
                 relevant_convos = load_conversations_by_id(results)
                 #GENERATE THE PROMPT
                 prompt = self.chatbot.generate_prompt(user_recent_text=user_input, relevant_convos=relevant_convos)
@@ -245,7 +245,7 @@ class BeckApp:
                 timestamp = time()
                 timestring = timestamp_to_string(timestamp) # in 
                 unique_id = str(uuid4())
-                metadata = {'speaker': 'BECK', 'time': timestamp, 'message': ai_response, 'timestring': timestring, 'uuid': unique_id} # metadtata to be saved to local database
+                metadata = {'speaker': 'BECK', 'time': timestamp, 'message': 'BECK: ' + ai_response, 'timestring': timestring, 'uuid': unique_id} # metadtata to be saved to local database
                 ai_response_embedding = gpt3_embeddings(ai_response)
                 # Save metadata to local database
                 save_metadata_to_json(metadata,unique_id)
