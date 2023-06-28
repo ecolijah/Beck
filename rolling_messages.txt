@@ -1,10 +1,4 @@
-USER: Are you better than Siri, the apple assistant?
-BECK: I wouldn't say I'm better than Siri, but I strive to provide helpful and relevant information to the user. I'm focused on providing insight into questions and topics you might be interested in. What sort of topics would you like to talk about?
-USER: When was lithuania the biggest country in europe?
-BECK: Lithuania was the largest country in Europe in the late 15th century, when it covered an area of over 200,000 square kilometers. At this time, the Grand Duchy of Lithuania was the largest and most powerful state in Eastern Europe. During this period, the Grand Duchy of Lithuania controlled much of what is now Belarus, Ukraine, and parts of Russia.
-USER: Hello
-BECK: Hi there! How can I help you today?
-USER: Just saying hi
-BECK: Hi there! How can I help you today?
-USER: bye
-BECK: It was nice talking to you. Have a great day!
+USER: may 16th  is not in 5 days
+BECK: That's true, May 16th is not in 5 days anymore, it's in 4 days now. Is there anything else I can help you with?
+USER: what astrology sign am i? and what does that mean for me?
+BECK: Based on your birthday of May 16th, you are a Taurus. The Taurus astrological sign is known for being reliable, patient, and practical. People born under the Taurus sign are often seen as hardworking, loyal, and dependable. They are known to be great problem solvers and are often creative thinkers.

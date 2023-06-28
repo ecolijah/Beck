@@ -6,6 +6,9 @@ import threading
 import pinecone
 from time import time, sleep
 from uuid import uuid4
+import json
+from datetime import datetime
+import calendar
 from dotenv import load_dotenv
 from class_file import RollingMessages, TextToSpeech
 
@@ -20,11 +23,75 @@ MESSAGES_FILEPATH = 'rolling_messages.txt' #create new file in root directory.
 PROMPT_FILEPATH = 'prompt.txt' #create new file in root directory.
 
 ##NEW FUNCTIONS
+def write_log(prompt, ai_response, unique_id):
+    log_folder = 'gpt_logs'
+    if not os.path.exists(log_folder):
+        os.makedirs(log_folder)
+    
+    file_path = os.path.join(log_folder, unique_id + '.txt')
+    
+    with open(file_path, 'a') as file:
+        file.write(prompt + '\n')
+        file.write(ai_response + '\n')
+
+def load_json(filepath):
+    with open(filepath, 'r', encoding='utf-8') as infile:
+        return json.load(infile)
+
+def load_conversations_by_id(results):
+    tmp_results = []
+    
+    if 'matches' in results:
+        for n in results['matches']:
+            info = load_json('local_database/%s.json' % n['id'])
+            tmp_results.append(info)
+        ordered = sorted(tmp_results, key=lambda d: d['time'], reverse=False)
+        messages = [i['message'] for i in ordered]
+        return '\n'.join(messages).strip()
+    else:
+        return "No 'matches' key found in the results dictionary."
+
+
+
+def save_metadata_to_json(metadata, unique_id):
+    folder_path = "local_database"
+    
+    # Create the folder if it doesn't exist
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+    
+    # Generate the file path
+    file_path = os.path.join(folder_path, f"{unique_id}.json")
+    
+    # Save metadata to the JSON file
+    with open(file_path, "w", encoding='utf-8') as outfile:
+        json.dump(metadata, outfile, ensure_ascii=False, sort_keys=True, indent=2)
+
+
+
+
 def gpt3_embeddings(content, engine='text-embedding-ada-002'):
     content = content.encode(encoding='ASCII',errors='ignore').decode() # fix all unicode errors
     response = openai.Embedding.create(input=content,engine=engine)
     vector = response['data'][0]['embedding']
     return vector
+
+def timestamp_to_string(timestamp):
+    # Convert timestamp to datetime object
+    dt_object = datetime.fromtimestamp(timestamp)
+    
+    # Extract year, month, day, hour, minute, and second from datetime object
+    year = dt_object.year
+    month = calendar.month_name[dt_object.month]
+    day = dt_object.day
+    hour = dt_object.hour
+    minute = dt_object.minute
+    second = dt_object.second
+    
+    # Format datetime components as readable string
+    formatted_string = f"{month} {day}, {year} {hour:02d}:{minute:02d}:{second:02d}"
+    
+    return formatted_string
 
 class ChatBot:
     # Represents the chatbot using OpenAI API
@@ -56,10 +123,10 @@ class ChatBot:
         )
         return response.choices[0].text.strip()
 
-    def generate_prompt(self, user_recent_text):
+    def generate_prompt(self, user_recent_text, relevant_convos):
         # Generate the conversation prompt with the latest user query.
         conversation = '\n'.join(self.messages.messages)
-        prompt = self.openai_prompt.replace("<<CONVERSATION>>", conversation).replace("<<USER_RECENT_QUERY>>", user_recent_text)
+        prompt = self.openai_prompt.replace("<<CONVERSATION>>", conversation).replace("<<USER_RECENT_QUERY>>", user_recent_text).replace("RELEVANT_CONVERSATION", relevant_convos)
         return prompt
 
 
@@ -101,7 +168,7 @@ class BeckApp:
 
         #TODO: Initialize pincone connection
         pinecone.init(api_key=pinecone_api_key, environment='northamerica-northeast1-gcp') # Establish connection to Pinecone
-        self.index = pinecone.Index('beck') # Connect to index
+        self.vdb_index = pinecone.Index('beck') # Connect to index
 
 
 
@@ -152,22 +219,39 @@ class BeckApp:
                 self.root.update_idletasks()
                 #generate prompt, call api
                 # TODO:GENERATE USER QUERY EMBEDDING
-
+                num_query_results = 5
+                payload = list() #tmp list for payload
                 timestamp = time()
-                
+                timestring = timestamp_to_string(timestamp) # in 
+                unique_id = str(uuid4())
+                metadata = {'speaker': 'USER', 'time': timestamp, 'message': user_input, 'timestring': timestring, 'uuid': unique_id} # metadtata to be saved to local database
 
+                # Save metadata to local database
+                save_metadata_to_json(metadata,unique_id)
+                #get embedding of user input
+                user_input_embedding = gpt3_embeddings(user_input)
+                #upload to payload(), will eventually be upserted to vector db. : (id, embedding)
+                payload.append((unique_id, user_input_embedding))
 
-
-
-
-
-
-
-
-
-
-                prompt = self.chatbot.generate_prompt(user_input)
+                #now we must query for similar results from vector db
+                results = self.vdb_index.query(vector=user_input_embedding, top_k=num_query_results)
+                relevant_convos = load_conversations_by_id(results)
+                #GENERATE THE PROMPT
+                prompt = self.chatbot.generate_prompt(user_recent_text=user_input, relevant_convos=relevant_convos)
+                #get chatgpt response
                 ai_response = self.chatbot.chat(prompt)
+                #log for testing
+                write_log(prompt,ai_response,unique_id)
+                timestamp = time()
+                timestring = timestamp_to_string(timestamp) # in 
+                unique_id = str(uuid4())
+                metadata = {'speaker': 'BECK', 'time': timestamp, 'message': ai_response, 'timestring': timestring, 'uuid': unique_id} # metadtata to be saved to local database
+                ai_response_embedding = gpt3_embeddings(ai_response)
+                # Save metadata to local database
+                save_metadata_to_json(metadata,unique_id)
+                payload.append((unique_id, ai_response_embedding))
+                self.vdb_index.upsert(payload)
+
                 if not self.window_open: #bug
                     return
                 #print("BECK:", ai_response) #testing purposes
