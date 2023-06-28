@@ -2,9 +2,12 @@ import tkinter as tk
 import speech_recognition as sr
 import os
 import openai
-import pyttsx3
 import threading
+import pinecone
+from time import time, sleep
+from uuid import uuid4
 from dotenv import load_dotenv
+from class_file import RollingMessages, TextToSpeech
 
 load_dotenv() #load environment variables
 GREEN_COLOR = "#00EE00" # go
@@ -16,34 +19,12 @@ ROLLING_MESSAGES_COUNT = 7 #can be increased for larger memory, at the cost of m
 MESSAGES_FILEPATH = 'rolling_messages.txt' #create new file in root directory.
 PROMPT_FILEPATH = 'prompt.txt' #create new file in root directory.
 
-
-class RollingMessages:
-    # Represents a rolling messages log.
-    def __init__(self, filepath, count):
-        self.filepath = filepath
-        self.count = count
-        self.messages = [] #variable representation of messages log.
-
-    def load(self):
-        # Load messages from file into messages list.
-        if os.path.isfile(self.filepath):
-            with open(self.filepath, 'r') as file:
-                self.messages = [line.strip() for line in file.readlines() if line.strip()]
-
-    def append(self, user_text, ai_text):
-        # Append a new message to the log.
-        message = f"USER: {user_text}\nBECK: {ai_text}"
-        if len(self.messages) >= self.count:
-            self.messages.pop(0) #pops oldest element
-            self.messages.pop(0) #pops 2nd oldest element, they come in pairs
-        self.messages.append(message)
-        self.write_to_file()
-
-    def write_to_file(self):
-        # Write messages to file.
-        with open(self.filepath, 'w') as file:
-            file.write('\n'.join(self.messages))
-
+##NEW FUNCTIONS
+def gpt3_embeddings(content, engine='text-embedding-ada-002'):
+    content = content.encode(encoding='ASCII',errors='ignore').decode() # fix all unicode errors
+    response = openai.Embedding.create(input=content,engine=engine)
+    vector = response['data'][0]['embedding']
+    return vector
 
 class ChatBot:
     # Represents the chatbot using OpenAI API
@@ -82,23 +63,12 @@ class ChatBot:
         return prompt
 
 
-class TextToSpeech:
-    # Handles text-to-speech conversion.
-    def __init__(self, voice_id):
-        self.engine = pyttsx3.init()
-        self.engine.setProperty("voice", voice_id)
-        self.engine.setProperty("rate", 210)
-
-    def speak(self, text):
-        # Convert text to speech and speak it.
-        self.engine.say(text)
-        self.engine.runAndWait()
 
 
 class BeckApp:
     # Represents the tkinter application for the Beck chatbot.
 
-    def __init__(self, chatbot, text_to_speech):
+    def __init__(self, chatbot, text_to_speech, pinecone_api_key):
         self.chatbot = chatbot
         self.text_to_speech = text_to_speech
         self.is_listening = False
@@ -128,6 +98,14 @@ class BeckApp:
         # on close protocol
         self.root.wm_protocol("WM_DELETE_WINDOW", self.on_close)
         self.window_open = True #boolean for threading bug
+
+        #TODO: Initialize pincone connection
+        pinecone.init(api_key=pinecone_api_key, environment='northamerica-northeast1-gcp') # Establish connection to Pinecone
+        self.index = pinecone.Index('beck') # Connect to index
+
+
+
+
         self.root.mainloop()
 
     def on_close(self):
@@ -173,6 +151,21 @@ class BeckApp:
                 self.button.config(bg=RED_COLOR)
                 self.root.update_idletasks()
                 #generate prompt, call api
+                # TODO:GENERATE USER QUERY EMBEDDING
+
+                timestamp = time()
+                
+
+
+
+
+
+
+
+
+
+
+
                 prompt = self.chatbot.generate_prompt(user_input)
                 ai_response = self.chatbot.chat(prompt)
                 if not self.window_open: #bug
@@ -192,6 +185,7 @@ class BeckApp:
                 if user_input.lower() in ["bye-bye", "bye", "goodbye"]:
                     self.root.destroy()
                 self.stop_listening()
+
         # Create a new thread and start the process
         self.thread = threading.Thread(target=process_message)
         self.thread.start()
@@ -248,6 +242,7 @@ class BeckApp:
 # Driver code
 if __name__ == "__main__":
     openai.api_key = os.getenv("OPENAI_API_KEY")
+    pinecone_api_key = os.getenv("PINECONE_API_KEY")
     chatbot = ChatBot(openai.api_key)
     text_to_speech = TextToSpeech(VOICE_ID)
-    app = BeckApp(chatbot, text_to_speech)
+    app = BeckApp(chatbot, text_to_speech, pinecone_api_key)
