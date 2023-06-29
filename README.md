@@ -13,6 +13,7 @@ Beck is an AI-powered chatbot that uses the OpenAI API, PineConeDB client, and s
 - Text-to-speech conversion: Beck will convert AI responses into speech for a more interactive experience.
 - Easy configuration: The chatbot can be customized by adjusting settings and environment variables.
 - Customizable experience: By altering the 'prompt.txt', users can easily cuztomize their experience in a variety of ways.
+- Tkinter-GUI: simple gui experience.
 
 ## Prerequisites
 
