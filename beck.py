@@ -102,8 +102,9 @@ class BeckApp:
         self.root.mainloop()
 
     def on_close(self):
-        self.root.destroy()
         self.window_open = False #close window before thread finished, bug
+        self.root.destroy()
+        
 
     def toggle_listening(self):
         if self.is_listening:
@@ -183,11 +184,8 @@ class BeckApp:
                 payload.append((unique_id, ai_response_embedding))
                 # upsert new entries to vdb
                 self.vdb_index.upsert(payload)
-
                 if not self.window_open: #bug
                     return
-                #print("BECK:", ai_response) #testing purposes
-
                 # Update the message box with bot response
                 self.message_box.config(state="normal")
                 self.message_box.insert(tk.END, "BECK: " + ai_response + "\n", "bot")

@@ -1,12 +1,12 @@
-USER: hey beck, what was the show we were just talking about?
-BECK: We were just talking about The Good Place. Is there anything else I can help you with?
-USER: What is my astrological sign?
-BECK: Based on your birthday of May 16th, you are a Taurus. The Taurus astrological sign is known for being reliable, patient, and practical. People born under the Taurus sign are often seen as hardworking, loyal, and dependable. They are known to be great problem solvers and are often creative thinkers.
-USER: bye
-BECK: Goodbye! It was nice talking to you. Your birthday is on May 16th and your astrological sign is Taurus.
 USER: bye
 BECK: Goodbye! It was nice talking to you. Your birthday is on May 16th and your astrological sign is Taurus.
 USER: My favorite colors are earth tones, specifically green, ten and brown.
 BECK: Earth tones are a great choice! Taurus is strongly connected to the Earth element, which is associated with the colors green, brown, and tan. These colors represent grounding, stability, and reliability, which are all great qualities of a Taurus. Is there anything else I can help you with?
 USER: bye
 BECK: Goodbye! It was nice talking to you. Your birthday is on May 16th and your astrological sign is Taurus. Have a great day!
+USER: Hey Beck, what were we just tlking abiut yesterday?
+BECK: We were talking about The Good Place yesterday. Is there anything else I can help you with?
+USER: bye
+BECK: Goodbye! It was nice talking to you. Your birthday is on May 16th and your astrological sign is Taurus. Have a great day!
+USER: What are some good cities in the usa to live in as a software engineer?
+BECK: Software engineers tend to flock to tech-hub cities like San Francisco, Seattle, Austin, and New York. However, smaller cities like Raleigh, NC and Portland, OR offer many of the same benefits with lower costs of living. Is there anything else I can help you with?
