@@ -8,7 +8,7 @@ from time import time
 from uuid import uuid4
 from dotenv import load_dotenv
 from class_file import RollingMessages, TextToSpeech
-from utility_functions import load_conversations_by_id, write_log, load_json,save_metadata_to_json,gpt3_embeddings,timestamp_to_string
+from utility_functions import load_conversations_by_id,write_log,save_metadata_to_json,gpt3_embeddings,timestamp_to_string
 
 load_dotenv() #load environment variables
 GREEN_COLOR = "#00EE00" # go
@@ -19,7 +19,7 @@ VOICE_ID = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_EN
 ROLLING_MESSAGES_COUNT = 7 #can be increased for larger memory, at the cost of more tokens.
 MESSAGES_FILEPATH = 'rolling_messages.txt' #create new file in root directory.
 PROMPT_FILEPATH = 'prompt.txt' #create new file in root directory.
-
+NUM_QUERY_RESULTS = 6 #number of relevant queries to inserted into prompt
 
 
 class ChatBot:
@@ -95,12 +95,9 @@ class BeckApp:
         self.root.wm_protocol("WM_DELETE_WINDOW", self.on_close)
         self.window_open = True #boolean for threading bug
 
-        #TODO: Initialize pincone connection
+        # Initialize pincone connection
         pinecone.init(api_key=pinecone_api_key, environment='northamerica-northeast1-gcp') # Establish connection to Pinecone
         self.vdb_index = pinecone.Index('beck') # Connect to index
-
-
-
 
         self.root.mainloop()
 
@@ -146,15 +143,15 @@ class BeckApp:
                 self.message_box.config(state="disabled")
                 self.button.config(bg=RED_COLOR)
                 self.root.update_idletasks()
+
                 #generate prompt, call api
-                # TODO:GENERATE USER QUERY EMBEDDING
-                num_query_results = 5
+                #gather metadata
                 payload = list() #tmp list for payload
                 timestamp = time()
                 timestring = timestamp_to_string(timestamp) # in 
                 unique_id = str(uuid4())
+                # create json doc wiht metadata (includes actual message)
                 metadata = {'speaker': 'USER', 'time': timestamp, 'message': 'USER: ' + user_input, 'timestring': timestring, 'uuid': unique_id} # metadtata to be saved to local database
-
                 # Save metadata to local database
                 save_metadata_to_json(metadata,unique_id)
                 #get embedding of user input
@@ -163,22 +160,28 @@ class BeckApp:
                 payload.append((unique_id, user_input_embedding))
 
                 #now we must query for similar results from vector db
-                results = self.vdb_index.query(vector=user_input_embedding, top_k=num_query_results, include_values=False, include_metadata=False)
+                results = self.vdb_index.query(vector=user_input_embedding, top_k=NUM_QUERY_RESULTS, include_values=False, include_metadata=False)
                 relevant_convos = load_conversations_by_id(results)
-                #GENERATE THE PROMPT
+                # GENERATE THE PROMPT
                 prompt = self.chatbot.generate_prompt(user_recent_text=user_input, relevant_convos=relevant_convos)
                 #get chatgpt response
                 ai_response = self.chatbot.chat(prompt)
                 #log for testing
                 write_log(prompt,ai_response,unique_id)
+
+                #gather metadata
                 timestamp = time()
                 timestring = timestamp_to_string(timestamp) # in 
                 unique_id = str(uuid4())
-                metadata = {'speaker': 'BECK', 'time': timestamp, 'message': 'BECK: ' + ai_response, 'timestring': timestring, 'uuid': unique_id} # metadtata to be saved to local database
-                ai_response_embedding = gpt3_embeddings(ai_response)
+                # create json doc wiht metadata (includes actual message)
+                metadata = {'speaker': 'BECK', 'time': timestamp, 'message': 'BECK: ' + ai_response, 'timestring': timestring, 'uuid': unique_id}
                 # Save metadata to local database
                 save_metadata_to_json(metadata,unique_id)
+                # create embedding of ai response
+                ai_response_embedding = gpt3_embeddings(ai_response)
+                #upload to payload(), will eventually be upserted to vector db. : (id, embedding)
                 payload.append((unique_id, ai_response_embedding))
+                # upsert new entries to vdb
                 self.vdb_index.upsert(payload)
 
                 if not self.window_open: #bug
@@ -196,7 +199,7 @@ class BeckApp:
                     return
                 self.chatbot.messages.append(user_input, ai_response)
                 if user_input.lower() in ["bye-bye", "bye", "goodbye"]:
-                    self.root.destroy()
+                    self.on_close()
                 self.stop_listening()
 
         # Create a new thread and start the process
@@ -223,8 +226,46 @@ class BeckApp:
                     self.message_box.insert(tk.END, "USER: " + text + "\n", "user")
                     self.root.update_idletasks()
         
-                    prompt = self.chatbot.generate_prompt(text)
+                    #generate prompt, call api
+                    #gather metadata
+                    payload = list() #tmp list for payload
+                    timestamp = time()
+                    timestring = timestamp_to_string(timestamp) # in 
+                    unique_id = str(uuid4())
+                    # create json doc wiht metadata (includes actual message)
+                    metadata = {'speaker': 'USER', 'time': timestamp, 'message': 'USER: ' + text, 'timestring': timestring, 'uuid': unique_id} # metadtata to be saved to local database
+                    # Save metadata to local database
+                    save_metadata_to_json(metadata,unique_id)
+                    #get embedding of user input
+                    user_input_embedding = gpt3_embeddings(text)
+                    #upload to payload(), will eventually be upserted to vector db. : (id, embedding)
+                    payload.append((unique_id, user_input_embedding))
+
+                    #now we must query for similar results from vector db
+                    results = self.vdb_index.query(vector=user_input_embedding, top_k=NUM_QUERY_RESULTS, include_values=False, include_metadata=False)
+                    relevant_convos = load_conversations_by_id(results)
+                    # GENERATE THE PROMPT
+                    prompt = self.chatbot.generate_prompt(user_recent_text=text, relevant_convos=relevant_convos)
+                    #get chatgpt response
                     ai_response = self.chatbot.chat(prompt)
+                    #log for testing
+                    write_log(prompt,ai_response,unique_id)
+
+                    #gather metadata
+                    timestamp = time()
+                    timestring = timestamp_to_string(timestamp) # in 
+                    unique_id = str(uuid4())
+                    # create json doc wiht metadata (includes actual message)
+                    metadata = {'speaker': 'BECK', 'time': timestamp, 'message': 'BECK: ' + ai_response, 'timestring': timestring, 'uuid': unique_id}
+                    # Save metadata to local database
+                    save_metadata_to_json(metadata,unique_id)
+                    # create embedding of ai response
+                    ai_response_embedding = gpt3_embeddings(ai_response)
+                    #upload to payload(), will eventually be upserted to vector db. : (id, embedding)
+                    payload.append((unique_id, ai_response_embedding))
+                    # upsert new entries to vdb
+                    self.vdb_index.upsert(payload)
+
                     if not self.window_open: #terminates window before thread stops 
                         return
                     print("BECK:", ai_response)
@@ -237,7 +278,7 @@ class BeckApp:
                         return
                     self.chatbot.messages.append(text, ai_response)
                     if text in ["bye-bye", "bye", "goodbye"]:
-                        self.root.destroy()
+                        self.on_close()
 
                 except sr.UnknownValueError:
                     print("Sorry, I could not understand audio.")

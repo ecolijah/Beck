@@ -5,7 +5,6 @@ from datetime import datetime
 import calendar
 
 
-##NEW FUNCTIONS
 def write_log(prompt, ai_response, unique_id):
     log_folder = 'gpt_logs'
     if not os.path.exists(log_folder):
@@ -23,7 +22,6 @@ def load_json(filepath):
 
 def load_conversations_by_id(results):
     tmp_results = []
-    
     if 'matches' in results:
         for n in results['matches']:
             info = load_json('local_database/%s.json' % n['id'])
@@ -33,8 +31,6 @@ def load_conversations_by_id(results):
         return '\n'.join(messages).strip()
     else:
         return "No 'matches' key found in the results dictionary."
-
-
 
 def save_metadata_to_json(metadata, unique_id):
     folder_path = "local_database"
@@ -49,9 +45,6 @@ def save_metadata_to_json(metadata, unique_id):
     # Save metadata to the JSON file
     with open(file_path, "w", encoding='utf-8') as outfile:
         json.dump(metadata, outfile, ensure_ascii=False, sort_keys=True, indent=2)
-
-
-
 
 def gpt3_embeddings(content, engine='text-embedding-ada-002'):
     content = content.encode(encoding='ASCII',errors='ignore').decode() # fix all unicode errors
