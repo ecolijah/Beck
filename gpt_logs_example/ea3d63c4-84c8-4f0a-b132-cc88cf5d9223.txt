@@ -1,0 +1,34 @@
+I am a chatbot named BECK, my goal is to provide helpful insight to the USER.
+I am concise with my responses but make sure to provide relevant information. Below is a record of our recent previous conversation:
+
+PREVIOUS CONVERSATION: 
+
+USER: who is the cast of The Good place
+BECK: The Good Place stars Kristen Bell as Eleanor Shellstrop, William Jackson Harper as Chidi Anagonye, Jameela Jamil as Tahani Al-Jamil, Manny Jacinto as Jason Mendoza, D'Arcy Carden as Janet, and Ted Danson as Michael. Is there anything else I can help you with?
+USER: where can I watch it
+BECK: The Good Place is available to stream on Netflix and Hulu. Is there anything else I can help you with?
+USER: bye
+BECK: Goodbye! It was nice talking to you. Your birthday is on May 16th.
+USER: hey beck, what was the show we were just talking about?
+BECK: We were just talking about The Good Place. Is there anything else I can help you with?
+USER: What is my astrological sign?
+BECK: Based on your birthday of May 16th, you are a Taurus. The Taurus astrological sign is known for being reliable, patient, and practical. People born under the Taurus sign are often seen as hardworking, loyal, and dependable. They are known to be great problem solvers and are often creative thinkers.
+USER: bye
+BECK: Goodbye! It was nice talking to you. Your birthday is on May 16th and your astrological sign is Taurus.
+
+RELEVANT CONVERSATION: 
+
+hello Beck
+USER: bye
+BECK: Goodbye! It was nice talking to you.
+USER: bye
+BECK: Goodbye! It was nice talking to you. Your birthday is on May 16th.
+USER: bye
+
+I will now provide a relevant and accurate response to the USER's latest query, drawing on information
+from the PREVIOUS conversation and/or RELEVANT conversation, if necessary.
+
+USER: bye
+
+BECK:
+Goodbye! It was nice talking to you. Your birthday is on May 16th and your astrological sign is Taurus.

@@ -1,0 +1,30 @@
+I am a chatbot named BECK, my goal is to provide helpful insight to the USER.
+I am concise with my responses but make sure to provide relevant information. Below is a record of our recent previous conversation:
+
+PREVIOUS CONVERSATION: 
+
+USER: What is the capital of lithuania?
+BECK: The capital of Lithuania is Vilnius. It is located in the southeastern part of the country and is the largest city in Lithuania.
+USER: What were we previously talking about?
+BECK: We were previously talking about your astrological sign, Taurus, and who you are compatible with. Is there anything else that I can help you with?
+USER: bye
+BECK: Goodbye! It was nice talking to you.
+USER: hello back when is my birthday
+BECK: Your birthday is on May 16th. Is there anything else I can help you with?
+
+RELEVANT CONVERSATION: 
+
+hello Beck
+what is your purpose?
+USER: What were we previously talking about?
+BECK: We were previously talking about your astrological sign, Taurus, and who you are compatible with. Is there anything else that I can help you with?
+USER: bye
+BECK: Goodbye! It was nice talking to you.
+
+I will now provide a relevant and accurate response to the USER's latest query, drawing on information
+from the PREVIOUS conversation and/or RELEVANT conversation, if necessary.
+
+USER: what were the previously talking about
+
+BECK:
+We were previously talking about your astrological sign, Taurus, and who you are compatible with. Is there anything else that I can help you with?
